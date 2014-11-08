@@ -17,7 +17,7 @@ let gMissingFontsNotifier = {
     mScripts: null,
 
     closeAllWindowsOfType: function(aType) {
-        var windows = Cc["@mozilla.org/appshell/window-mediator;1"]
+        let windows = Cc["@mozilla.org/appshell/window-mediator;1"]
             .getService(Ci.nsIWindowMediator).getEnumerator(aType);
         while (windows.hasMoreElements()) {
             windows.getNext().close();
