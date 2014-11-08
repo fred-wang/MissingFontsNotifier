@@ -137,8 +137,6 @@ let gMissingFontsNotifier = {
         }
     },
 
-    // FIXME: add preference listener?
-
     fontNeeded: function(aData) {
         let hasNewScripts = false;
         let scriptList = aData.split(",");
@@ -235,11 +233,14 @@ function shutdown(aData, aReason) {
     // Cleanup the missing fonts notifier.
     gMissingFontsNotifier.cleanup();
 
-    // Reset preference for notification of missing fonts.
+    // Reset preferences.
+    let prefs = Cc["@mozilla.org/preferences-service;1"].
+        getService(Ci.nsIPrefService);
     if (aReason == ADDON_DISABLE || aReason == ADDON_UNINSTALL) {
-        Cc["@mozilla.org/preferences-service;1"].
-            getService(Ci.nsIPrefService).getBranch("gfx.missing_fonts.").
-            clearUserPref("notify");
+        prefs.getBranch("gfx.missing_fonts.").clearUserPref("notify");
+    }
+    if (aReason == ADDON_UNINSTALL) {
+        prefs.resetBranch("missingfontsnotifier.");
     }
 }
 
