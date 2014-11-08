@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<!-- -*- Mode: xml; tab-width: 2; indent-tabs-mode:nil; -->
+<!-- vim: set ts=2 et sw=2 tw=80: -->
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+  <Description about="urn:mozilla:install-manifest">
+
+    <em:id>MissingFontsNotifier@mozilla.com</em:id>
+    <em:bootstrap>true</em:bootstrap>
+    <em:version>1.0</em:version>
+    <em:type>2</em:type>
+    <em:creator>Frédéric Wang</em:creator>
+    <em:iconURL>chrome://missingfontsnotifier/skin/notification-48.png</em:iconURL>
+    <em:localized>
+      <Description>
+        <em:locale>en-US</em:locale>
+        <em:name>Missing Fonts Notifier</em:name>
+        <em:description>This add-on detects characters that can not be displayed properly during your browsing. It informs you about missing fonts and helps you to install them.</em:description>
+      </Description>
+    </em:localized>
+    <em:localized>
+      <Description>
+        <em:locale>fr-FR</em:locale>
+        <em:name>Notificateur de polices manquantes</em:name>
+        <em:description>Ce module complémentaire détecte les caractères qui ne peuvent pas être affichés correctement pendant votre navigation. Il vous informe de police manquantes et vous aide à les installer.</em:description>
+      </Description>
+    </em:localized>
+
+    <!-- SeaMonkey  -->
+    <em:targetApplication>
+      <Description>
+        <em:id>{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}</em:id>
+        <em:minVersion>2.28</em:minVersion>
+        <em:maxVersion>2.33</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
+    <!-- Firefox -->
+    <em:targetApplication>
+      <Description>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+        <em:minVersion>31.0</em:minVersion>
+        <em:maxVersion>36.0</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
+    <!-- Thunderbird -->
+    <em:targetApplication>
+      <Description>
+        <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
+        <em:minVersion>31.0</em:minVersion>
+        <em:maxVersion>36.0</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
+  </Description>
+</RDF>

@@ -1,0 +1,4 @@
+<!ENTITY dialogTitle "Notificateur de polices manquantes">
+<!ENTITY dialogMessage "Des caractères provenant de la liste de scripts suivante n'ont pu être affichés correctement:">
+<!ENTITY dialogQuestion "Souhaitez vous télécharger des polices additionelles?">
+<!ENTITY dialogExtra1Label "Toujours ignorer ces scripts">

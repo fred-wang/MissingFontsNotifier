@@ -1,0 +1,4 @@
+<!ENTITY dialogTitle "Missing Fonts Notifier">
+<!ENTITY dialogMessage "Some characters from the following list of scripts could not be displayed correctly:">
+<!ENTITY dialogQuestion "Do you want to download some additional fonts?">
+<!ENTITY dialogExtra1Label "Always ignore these scripts">

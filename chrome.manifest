@@ -1,0 +1,5 @@
+content missingfontsnotifier chrome/content/
+skin missingfontsnotifier default chrome/skin/
+
+locale missingfontsnotifier en-US chrome/locale/en-US/
+locale missingfontsnotifier fr-FR chrome/locale/fr-FR/

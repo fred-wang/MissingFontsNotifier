@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
+<!DOCTYPE dialog SYSTEM "chrome://missingfontsnotifier/locale/dialog.dtd">
+
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        id="dialog" title="&dialogTitle;"
+        windowtype="dialog:missingfontsnotifier"
+        buttons="cancel,accept,extra1"
+        buttonlabelextra1="&dialogExtra1Label;"
+        ondialogcancel="onCancel();"
+        ondialogaccept="onAccept();"
+        ondialogextra1="onAlwaysIgnore();"
+        onload="onLoad();">
+
+  <script type="application/javascript"
+          src="chrome://missingfontsnotifier/content/dialog.js"/>
+
+  <vbox>
+    <hbox>
+      <box align="start">
+        <image src="chrome://missingfontsnotifier/skin/notification-48.png"
+               width="48" height="48"/>
+      </box>
+      <vbox>
+        <label value="&dialogMessage;"/>
+        <label id="missingScriptNames"/>
+      </vbox>
+    </hbox>
+    <separator/>
+    <label value="&dialogQuestion;"/>
+    <separator/>
+    <hbox>
+      <spacer flex="1"/>
+      <button dlgtype="cancel"/>
+      <button dlgtype="accept"/>
+      <button dlgtype="extra1"/>
+      <spacer flex="1"/>
+    </hbox>
+  </vbox>
+
+</dialog>
