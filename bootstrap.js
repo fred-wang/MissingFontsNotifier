@@ -13,7 +13,9 @@ const kIgnored = 2;
 
 Cu.import("resource://gre/modules/NetUtil.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
-cu.import("resource://gre/modules/Downloads.jsm");
+Cu.import("resource://gre/modules/Downloads.jsm");
+Cu.import("resource://gre/modules/osfile.jsm")
+Cu.import("resource://gre/modules/Task.jsm");
 
 let gMissingFontsNotifier = {
 
@@ -21,12 +23,12 @@ let gMissingFontsNotifier = {
     mFontData: null,
 
     // These two values are given by the "missingfontsnotifier.packagekitnames"
-    // and "missingfontsnotifier.downloadupstream" preferences and control which
-    // information to use from chrome/content/fonts.json. The first one gives
-    // the PackageKit names to use ("debian", "fedora"...). The second one
-    // indicates whether we fallback to an upstream download.
+    // and "missingfontsnotifier.downloadfromserver" preferences and control
+    // which information to use from chrome/content/fonts.json.
+    // The first one gives the PackageKit names to use ("debian", "fedora"...).
+    // The second one indicates whether we fallback to a download from a server.
     mPackageKitNames: null,
-    mDownloadUpstream: null,
+    mDownloadFromServer: null,
 
     // This is an object containing pair "script-name: state" for the script
     // names we already handled. The state can be kNotified (displayed in the
@@ -62,7 +64,7 @@ let gMissingFontsNotifier = {
         // Initialize the preferences.
         this.mScripts = {};
         this.mPackageKitNames = null;
-        this.mDownloadUpstream = true;
+        this.mDownloadFromServer = true;
         this.loadPreferences();
         try {
             let service = Cc["@mozilla.org/packagekit-service;1"].
@@ -176,8 +178,8 @@ let gMissingFontsNotifier = {
         if (preferences.prefHasUserValue("packagekitnames")) {
             this.mPackageKitNames = preferences.getCharPref("packagekitnames");
         }
-        if (preferences.prefHasUserValue("downloadupstream")) {
-            this.mDownloadUpstream = preferences.getBoolPref("downloadupstream");
+        if (preferences.prefHasUserValue("downloadfromserver")) {
+            this.mDownloadFromServer = preferences.getBoolPref("downloadfromserver");
         }
     },
 
@@ -286,7 +288,6 @@ let gMissingFontsNotifier = {
 
     processScripts: function(aScriptsToProcess) {
         let name, data;
-        let upstreamDownload = [];
         let noFontsAvailable = [];
         while (aScriptsToProcess.length) {
             name = aScriptsToProcess.pop();
@@ -295,15 +296,14 @@ let gMissingFontsNotifier = {
                 if (this.mPackageKitNames && this.mPackageKitNames in data) {
                     this.mPackagesToDownload.push(data[this.mPackageKitNames]);
                     continue;
-                } else if (this.mDownloadUpstream && data.upstream) {
-                    upstreamDownload.push(data.upstream);
+                } else if (this.mDownloadFromServer && data.download) {
+                    this.downloadFrom(data.download);
                     continue;
                 }
             }
             noFontsAvailable.push(this.getString(name));
         }
         this.packageKitInstall();
-        this.upstreamDownload(upstreamDownload);
         if (noFontsAvailable.length) {
             this.showAlertNotification(this.getString("noFontsAvailable") +
                                        " " + noFontsAvailable);
@@ -337,9 +337,31 @@ let gMissingFontsNotifier = {
         // transaction completes.
     },
 
-    upstreamDownload: function(aFileList) {
-        // TODO
-        console.log(aFileList);
+    downloadFrom: function(aURI) {
+        Task.spawn(function () {
+            let list = yield Downloads.getList(Downloads.ALL);
+            let temporaryDirectory;
+            try {
+                temporaryDirectory = OS.Path.join(OS.Constants.Path.tmpDir,
+                                                  "MissingFontsNotifier");
+                yield OS.File.makeDir(temporaryDirectory);
+            } catch(e) {
+                temporaryDirectory = OS.Constants.Path.tmpDir;
+            }
+            let download = yield Downloads.createDownload({
+                source: aURI,
+                target: OS.Path.join(temporaryDirectory, aURI.split("/").pop())
+            });
+            yield list.add(download);
+            try {
+                yield download.start();
+                yield download.showContainingDirectory();
+            } catch(e) {
+                console.error(e);
+                yield list.remove(download);
+                yield download.finalize(true);
+            }
+        }).then(null, Components.utils.reportError);
     }
 
 }

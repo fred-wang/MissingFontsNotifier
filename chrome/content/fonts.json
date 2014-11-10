@@ -1,14 +1,26 @@
 {
     "Aghb": {},
-    "Arab": { "debian": "fonts-hosny-amiri", "fedora": "amiri-fonts", "upstream": "https://github.com/khaledhosny/amiri-font/archive/0.107.zip" },
+    "Arab": {
+        "debian": "fonts-hosny-amiri",
+        "fedora": "amiri-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/amiri-regular.ttf"
+    },
     "Armi": {},
-    "Armn": { "debian": "fonts-noto", "fedora": "google-noto-sans-armenian-fonts", "upstream": "http://www.google.com/get/noto/pkgs/NotoSansArmenian-hinted.zip" },
+    "Armn": {
+        "debian": "fonts-noto",
+        "fedora": "google-noto-sans-armenian-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/NotoSansArmenian-Regular.ttf"
+    },
     "Avst": {},
     "Bali": {},
     "Bamu": {},
     "Bass": {},
     "Batk": {},
-    "Beng": { "debian": "fonts-lohit-bengali", "fedora": "lohit-bengali-fonts", "upstream": "https://fedorahosted.org/releases/l/o/lohit/Lohit-Bengali.ttf" },
+    "Beng": {
+        "debian": "fonts-lohit-bengali",
+        "fedora": "lohit-bengali-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/Lohit-Bengali.ttf"
+    },
     "Bopo": {},
     "Brah": {},
     "Brai": {},
@@ -22,36 +34,75 @@
     "Copt": {},
     "Cprt": {},
     "Cyrl": {},
-    "Deva": { "debian": "fonts-lohit-deva", "fedora": "lohit-devanagari-fonts", "upstream": "http://www.google.com/get/noto/pkgs/NotoSansDevanagari-hinted.zip" },
+    "Deva": {
+        "debian": "fonts-lohit-deva",
+        "fedora": "lohit-devanagari-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/Lohit-Devanagari.ttf"
+    },
     "Dsrt": {},
     "Dupl": {},
-    "Egyp": { "debian": "ttf-ancient-fonts", "fedora": "gdouros-aegyptus-fonts", "upstream": "http://users.teilar.gr/~g1951d/Aegyptus.zip" },
+    "Egyp": {
+        "debian": "ttf-ancient-fonts",
+        "fedora": "gdouros-aegyptus-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/AegyptusR.ttf"
+    },
     "Elba": {},
-    "Ethi": { "debian": "fonts-senamirmir-washra", "fedora": "senamirmir-washra-fonts", "upstream": "http://www.senamirmir.org/downloads/washra_fonts.zip" },
-    "Geor": { "debian": "fonts-bpg-georgian", "fedora": "bpg-fonts", "upstream": "http://www.google.com/get/noto/pkgs/NotoSansGeorgian-hinted.zip" },
+    "Ethi": {
+        "debian": "fonts-sil-abyssinica",
+        "fedora": "abyssinica-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/AbyssinicaSIL-R.ttf"
+    },
+    "Geor": {
+        "debian": "fonts-bpg-georgian",
+        "fedora": "bpg-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/BPG_Sans_Regular_GPL%26GNU.ttf"
+    },
     "Glag": {},
     "Goth": {},
     "Gran": {},
     "Grek": {},
-    "Gujr": { "debian": "fonts-lohit-gujr", "fedora": "lohit-gujarati-fonts", "upstream": "https://fedorahosted.org/releases/l/o/lohit/Lohit-Gujarati.ttf" },
-    "Guru": { "debian": "fonts-lohit-guru", "fedora": "lohit-gurmukhi-fonts", "upstream": "http://www.google.com/get/noto/pkgs/NotoSansGurmukhi-hinted.zip" },
+    "Gujr": {
+        "debian": "fonts-lohit-gujr",
+        "fedora": "lohit-gujarati-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/Lohit-Gujarati.ttf"
+    },
+    "Guru": {
+        "debian": "fonts-lohit-guru",
+        "fedora": "lohit-gurmukhi-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/Lohit-Punjabi.ttf"
+    },
     "Hang": {},
     "Hani": {},
     "Hano": {},
-    "Hebr": { "debian": "fonts-sil-ezra", "upstream": "http://scripts.sil.org/cms/scripts/render_download.php?format=file&media_id=EzraSIL251.zip&filename=EzraSIL251.zip" },
+    "Hebr": {
+        "debian": "fonts-sil-ezra",
+        "download": "https://fred-wang.github.io/mozilla-font-server/SILEOT.ttf"
+    },
     "Hira": {},
     "Hmng": {},
     "Ital": {},
     "Java": {},
     "Kali": {},
-    "Kana": { "debian": "fonts-lohit-knda", "fedora": "lohit-kannada-fonts", "upstream": "https://fedorahosted.org/releases/l/o/lohit/Lohit-Kannada.ttf" },
+    "Kana": {},
     "Khar": {},
-    "Khmr": { "debian": "fonts-khmeros", "fedora": "khmeros-fonts", "upstream": "http://www.google.com/get/noto/pkgs/NotoSansKhmer-hinted.zip" },
+    "Khmr": {
+        "debian": "fonts-khmeros",
+        "fedora": "khmeros-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/KhmerOSsys.ttf"
+    },
     "Khoj": {},
-    "Knda": { "debian": "fonts-lohit-knda", "fedora": "lohit-kannada-fonts", "upstream": "https://fedorahosted.org/releases/l/o/lohit/Lohit-Kannada.ttf" },
+    "Knda": {
+        "debian": "fonts-lohit-knda",
+        "fedora": "lohit-kannada-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/Lohit-Kannada.ttf"
+    },
     "Kthi": {},
     "Lana": {},
-    "Laoo": { "debian": "fonts-lao", "fedora": "phetsarath-fonts", "upstream": "https://pasalao.googlecode.com/files/Phetsarath_OT.ttf" },
+    "Laoo": {
+        "debian": "fonts-lao",
+        "fedora": "phetsarath-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/Phetsarath_OT.ttf"
+    },
     "Latn": {},
     "Lepc": {},
     "Limb": {},
@@ -66,7 +117,11 @@
     "Mend": {},
     "Merc": {},
     "Mero": {},
-    "Mlym": { "debian": "fonts-lohit-mlym", "fedora": "lohit-malayalam-fonts", "upstream": "https://fedorahosted.org/releases/l/o/lohit/Lohit-Malayalam.ttf" },
+    "Mlym": {
+        "debian": "fonts-lohit-mlym",
+        "fedora": "lohit-malayalam-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/Lohit-Malayalam.ttf"
+    },
     "Modi": {},
     "Mong": {},
     "Mroo": {},
@@ -78,7 +133,11 @@
     "Ogam": {},
     "Olck": {},
     "Orkh": {},
-    "Orya": { "debian": "fonts-lohit-orya", "fedora": "lohit-oriya-fonts", "upstream": "https://fedorahosted.org/releases/l/o/lohit/Lohit-Oriya.ttf" },
+    "Orya": {
+        "debian": "fonts-lohit-orya",
+        "fedora": "lohit-oriya-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/Lohit-Odia.ttf"
+    },
     "Osma": {},
     "Palm": {},
     "Pauc": {},
@@ -97,7 +156,10 @@
     "Shaw": {},
     "Shrd": {},
     "Sidd": {},
-    "Sind": { "fedora": "lohit-sindhi-fonts", "upstream": null },
+    "Sind": {
+        "fedora": "lohit-sindhi-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/Lohit-Sindhi.ttf"
+    },
     "Sinh": {},
     "Sora": {},
     "Sund": {},
@@ -107,20 +169,44 @@
     "Takr": {},
     "Tale": {},
     "Talu": {},
-    "Taml": { "debian": "fonts-lohit-taml", "fedora": "lohit-tamil-fonts", "upstream": "https://fedorahosted.org/releases/l/o/lohit/Lohit-Tamil.ttf" },
+    "Taml": {
+        "debian": "fonts-lohit-taml",
+        "fedora": "lohit-tamil-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/Lohit-Tamil.ttf"
+    },
     "Tavt": {},
-    "Telu": { "debian": "fonts-lohit-telu", "fedora": "lohit-telugu-fonts", "upstream": "https://fedorahosted.org/releases/l/o/lohit/Lohit-Telugu.ttf" },
+    "Telu": {
+        "debian": "fonts-lohit-telu",
+        "fedora": "lohit-telugu-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/Lohit-Telugu.ttf"
+    },
     "Tfng": {},
     "Tglg": {},
     "Thaa": {},
-    "Thai": { "debian": "fonts-sipa-arundina", "fedora": "thai-arundina-fonts", "upstream": "http://www.google.com/get/noto/pkgs/NotoSansThai-hinted.zip" },
+    "Thai": {
+        "debian": "fonts-sipa-arundina",
+        "fedora": "thai-arundina-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/ArundinaSans.ttf"
+    },
     "Tibt": {},
     "Tirh": {},
     "Ugar": {},
     "Vaii": {},
     "Wara": {},
     "Xpeo": {},
-    "Xsux": { "debian": "ttf-ancient-fonts", "fedora": "gdouros-akkadian-fonts", "upstream": "http://users.teilar.gr/~g1951d/Akkadian.zip" },
-    "Yiii": { "debian": "fonts-sil-nuosusil", "fedora": "sil-nuosu-fonts", "upstream": "http://scripts.sil.org/cms/scripts/render_download.php?format=file&media_id=NuosuSIL2.1.1.zip&filename=NuosuSIL2.1.1.zip" },
-    "Zmth": { "debian": "fonts-stix", "fedora": "stix-fonts", "upstream": "http://mirrors.ctan.org/fonts/xits/xits-math.otf" }
+    "Xsux": {
+        "debian": "ttf-ancient-fonts",
+        "fedora": "gdouros-akkadian-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/Akkadian.ttf"
+    },
+    "Yiii": {
+        "debian": "fonts-sil-nuosusil",
+        "fedora": "sil-nuosu-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/NuosuSIL.ttf"
+    },
+    "Zmth": {
+        "debian": "fonts-stix",
+        "fedora": "stix-fonts",
+        "download": "https://fred-wang.github.io/mozilla-font-server/xits-math.otf"
+    }
 }
