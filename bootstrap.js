@@ -322,15 +322,15 @@ let gMissingFontsNotifier = {
                 getService(Ci.nsIPackageKitService);
             let packages = Cc["@mozilla.org/array;1"].
                 createInstance(Ci.nsIMutableArray);
-            this.mPackagesDownload.forEach(function(aPackage) {
+            this.mPackagesToDownload.forEach(function(aPackage) {
                 let p = Cc["@mozilla.org/supports-string;1"].
                     createInstance(Ci.nsISupportsString);
                 p.data = aPackage;
                 packages.appendElement(p, false);
             });
-            packageKitService.installPackages(packageKitService.
-                                              PK_INSTALL_PACKAGE_NAMES,
-                                              packages, this);
+            this.mPackageKitService.installPackages(this.mPackageKitService.
+                                                    PK_INSTALL_PACKAGE_NAMES,
+                                                    packages, this);
         }
         // else a packagekit transaction is already in progress, the
         // files in this.mPackagesDownload will be downloaded when the current
