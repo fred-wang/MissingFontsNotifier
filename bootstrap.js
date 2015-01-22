@@ -6,6 +6,7 @@
 
 const { classes: Cc, interfaces: Ci, utils: Cu } = Components;
 
+const kE10sCode = "chrome://missingfontsnotifier/content/e10scode.js";
 const kIcon = "chrome://missingfontsnotifier/skin/notification-48.png";
 const kNotified = 0;
 const kProcessed = 1;
@@ -16,6 +17,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/Downloads.jsm");
 Cu.import("resource://gre/modules/osfile.jsm")
 Cu.import("resource://gre/modules/Task.jsm");
+Cu.import("resource://gre/modules/devtools/Console.jsm");
 
 let gMissingFontsNotifier = {
 
@@ -78,14 +80,27 @@ let gMissingFontsNotifier = {
         this.mPackageKitService = null;
         this.mPackagesToDownload = [];
 
-        Services.obs.addObserver(this, "font-needed", false);
+        // Observer notifications from the child process.
+        Cc["@mozilla.org/parentprocessmessagemanager;1"].
+            getService(Ci.nsIMessageListenerManager).
+            addMessageListener("MissingFontsNotifier:font-needed", this);
     },
 
     cleanup: function() {
         this.closeAllWindowsOfType("alert:missingfontsnotifier");
         this.closeAllWindowsOfType("dialog:missingfontsnotifier");
-        Services.obs.removeObserver(this, "font-needed");
         this.savePreferences();
+
+        // Unobserve notifications from the child process.
+        Cc["@mozilla.org/parentprocessmessagemanager;1"].
+            getService(Ci.nsIMessageListenerManager).
+            removeMessageListener("MissingFontsNotifier:font-needed", this);
+    },
+
+    receiveMessage: function(aMessage) {
+        if (aMessage.name == "MissingFontsNotifier:font-needed") {
+            this.observe(null, "font-needed", aMessage.data);
+        }
     },
 
     observe: function(aSubject, aTopic, aData) {
@@ -374,6 +389,20 @@ function startup(aData, aReason) {
             setBoolPref("notify", true);
     }
 
+    // Load the module observing "font-needed" notifications.
+    let resource = Services.io
+        .getProtocolHandler("resource")
+        .QueryInterface(Ci.nsIResProtocolHandler);
+    let alias = Services.io.newFileURI(aData.installPath);
+    if (!aData.installPath.isDirectory()) {
+        alias = Services.io.newURI("jar:" + alias.spec + "!/resources/",
+                                   null, null);
+    }
+    resource.setSubstitution("missingfontsnotifier", alias);
+    Cc["@mozilla.org/globalmessagemanager;1"].
+        getService(Ci.nsIMessageListenerManager).
+        loadFrameScript(kE10sCode, true);
+
     // Init the missing fonts notifier.
     gMissingFontsNotifier.init();
 }
@@ -386,6 +415,15 @@ function shutdown(aData, aReason) {
 
     // Cleanup the missing fonts notifier.
     gMissingFontsNotifier.cleanup();
+
+    // Remove the module observing "font-needed" notifications.
+    let resource = Services.io
+        .getProtocolHandler("resource")
+        .QueryInterface(Ci.nsIResProtocolHandler);
+    resource.setSubstitution("missingfontsnotifier", null);
+    Cc["@mozilla.org/globalmessagemanager;1"].
+        getService(Ci.nsIMessageListenerManager).
+        removeDelayedFrameScript(kE10sCode);
 
     // Reset preferences.
     let prefs = Cc["@mozilla.org/preferences-service;1"].
@@ -402,4 +440,8 @@ function install(aData, aReason) {
 }
 
 function uninstall(aData, aReason) {
+    // Unregister the module observing "font-needed" notifications.
+    Cc["@mozilla.org/globalmessagemanager;1"].
+        getService(Ci.nsIMessageBroadcaster).
+        broadcastAsyncMessage("MissingFontsNotifier:uninstall", {});
 }
