@@ -4,14 +4,67 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const { classes: Cc, interfaces: Ci, utils: Cu } = Components;
-
+////////////////////////////////////////////////////////////////////////////////
+// "gfx.missing_fonts.notify"
+// This is a boolean preference enabled by the addon. It will make Gecko raise
+// "missing font" notifications when it fails to draw a given character.
+// The notification message contains the Unicode script to which the missing
+// character belongs, with "Zmth" used for MathML and math characters
+// (see en.wikipedia.org/wiki/Script_%28Unicode%29#Table_of_scripts_in_Unicode).
+// Note that for each Unicode script, such a notification will only happen once
+// per browser session
+// (see https://bugzilla.mozilla.org/show_bug.cgi?id=619521#c120).
+//
+// "missingfontsnotifier.ignored_scripts"
+// This a string preference storing the comma-separated list of Unicode scripts
+// that the user decided to ignore. The addon won't notify again for these
+// missing scripts, unless the preference is reset.
+//
+// "missingfontsnotifier.packagekitnames"
+// This is the comma-separated list of PackageKitName* keys that the addon will
+// consider (see below) and is initialized to kDefaultPackageKitNames.
+// Set the value to an empty list if you don't want the addon to use PackageKit.
+const kDefaultPackageKitNames = ["debian", "fedora"];
+//
+// "missingfontsnotifier.fontserver"
+// This is the URI of the server from which the fonts are downloaded
+// (see below) and is initialized to kDefaultFontServer.
+// Set the value to "null" if you don't want the addon to download font files
+// from such a server.
+const kDefaultFontServer = "https://fred-wang.github.io/mozilla-font-server/";
+//
+// chrome/content/fonts.json
+// This file contains the JSON font data described by key:value pairs. Each
+// key is a unicode script and the associate value is a Javascript object of
+// the form
+// {
+//    "PackageKitName1": "FontPackageName1",
+//    "PackageKitName2": "FontPackageName2",
+//    ...
+//    "download": "FontFile"
+// }
+// where
+// 1) All the key:value pairs are optional.
+// 2) The PackageKitName* key identifies a package kit set for a given
+//   distribution (e.g. "fedora") and the value FontPackageName* is the
+//   corresponding font package name to install for the given Unicode script.
+// 3) FontFile is the file name of a font to download from the font server
+//   (see kDefaultFontServer) for the given Unicode script.
+//
+// If you wish to add more fonts or data, please send a pull request to
+// https://github.com/fred-wang/MissingFontsNotifier/pulls
+// If instead you want to restrict the font data to consider for your custom
+// distribution of that addon, you might just want to keep a patch to change
+// the kDefaultPackageKitNames and kDefaultFontServer values above.
+//
+////////////////////////////////////////////////////////////////////////////////
 const kE10sCode = "chrome://missingfontsnotifier/content/e10scode.js";
 const kIcon = "chrome://missingfontsnotifier/skin/notification-48.png";
 const kNotified = 0;
 const kProcessed = 1;
 const kIgnored = 2;
 
+const { classes: Cc, interfaces: Ci, utils: Cu } = Components;
 Cu.import("resource://gre/modules/NetUtil.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/Downloads.jsm");
@@ -21,64 +74,41 @@ Cu.import("resource://gre/modules/devtools/Console.jsm");
 
 let gMissingFontsNotifier = {
 
-    // This will contain the JSON file at chrome/content/fonts.json
-    mFontData: null,
-
-    // These two values are given by the "missingfontsnotifier.packagekitnames"
-    // and "missingfontsnotifier.downloadfromserver" preferences and control
-    // which information to use from chrome/content/fonts.json.
-    // The first one gives the PackageKit names to use ("debian", "fedora"...).
-    // The second one indicates whether we fallback to a download from a server.
-    mPackageKitNames: null,
-    mDownloadFromServer: null,
-
-    // This is an object containing pair "script-name: state" for the script
-    // names we already handled. The state can be kNotified (displayed in the
-    // alert/dialog windows), kProcessed (the user clicked "OK" in the dialog)
-    // or kIgnored (the user clicked "Ignore" in the dialog, perhaps in a
-    // previous session).
-    mScripts: null,
-
-    // These are reference to our custom alert and dialog windows, to ensure
-    // that we only open one at a time.
-    mAlertWindow: null,
-    mDialogWindow: null,
-
-    // Some variables to handle PackageKit transactions.
-    mPackageKitService: null,
-    mPackagesToDownload: null,
-
-    closeAllWindowsOfType: function(aType) {
-        let windows = Cc["@mozilla.org/appshell/window-mediator;1"]
-            .getService(Ci.nsIWindowMediator).getEnumerator(aType);
-        while (windows.hasMoreElements()) {
-            windows.getNext().close();
-        }
-    },
-
     init: function() {
-        // Close all windows.
-        this.closeAllWindowsOfType("alert:missingfontsnotifier");
-        this.closeAllWindowsOfType("dialog:missingfontsnotifier");
+        // This will contain the JSON font data.
+        this.mFontData = null;
+
+        // This is an object containing pair "script-name: state" for the script
+        // names we already handled. The state can be kNotified (displayed in
+        // the alert/dialog windows), kProcessed (the user clicked "OK" in the
+        // dialog) or kIgnored (the user clicked "Ignore" in the dialog,
+        // perhaps in a previous session).
+        this.mScripts = {};
+
+        // These are reference to our custom alert and dialog windows, to ensure
+        // that we only open one at a time.
         this.mAlertWindow = null;
         this.mDialogWindow = null;
 
+        // Close all windows.
+        this.closeAllWindowsOfType("alert:missingfontsnotifier");
+        this.closeAllWindowsOfType("dialog:missingfontsnotifier");
+
+        // Initialize the variables to manage PackageKit transactions.
+        this.mPackageKitService = null;
+        this.mPackagesToDownload = [];
+
         // Initialize the preferences.
-        this.mScripts = {};
-        this.mPackageKitNames = null;
-        this.mDownloadFromServer = true;
+        this.mPackageKitNames = kDefaultPackageKitNames;
+        this.mFontServer = kDefaultFontServer;
         this.loadPreferences();
         try {
             let service = Cc["@mozilla.org/packagekit-service;1"].
                 getService(Ci.nsIPackageKitService);
         } catch(e) {
             // If nsIPackageKitService is not available, never use PackageKit.
-            this.mPackageKitNames = null;
+            this.mPackageKitNames = [];
         }
-
-        // Initialize the PackageKit members.
-        this.mPackageKitService = null;
-        this.mPackagesToDownload = [];
 
         // Observer notifications from the child process.
         Cc["@mozilla.org/parentprocessmessagemanager;1"].
@@ -97,10 +127,27 @@ let gMissingFontsNotifier = {
             removeMessageListener("MissingFontsNotifier:font-needed", this);
     },
 
+    closeAllWindowsOfType: function(aType) {
+        let windows = Cc["@mozilla.org/appshell/window-mediator;1"]
+            .getService(Ci.nsIWindowMediator).getEnumerator(aType);
+        while (windows.hasMoreElements()) {
+            windows.getNext().close();
+        }
+    },
+
     receiveMessage: function(aMessage) {
         if (aMessage.name == "MissingFontsNotifier:font-needed") {
             this.observe(null, "font-needed", aMessage.data);
         }
+    },
+
+    showAlertNotification: function(aMessage) {
+        console.warn(this.getString("notificationTitle") + " - " + aMessage);
+        Cc["@mozilla.org/alerts-service;1"].getService(Ci.nsIAlertsService).
+            showAlertNotification(kIcon,
+                                  this.getString("notificationTitle"),
+                                  aMessage,
+                                  false, "", null, "");
     },
 
     observe: function(aSubject, aTopic, aData) {
@@ -121,8 +168,11 @@ let gMissingFontsNotifier = {
             this.mDialogWindow = null;
             break;
           case "packagekit-install":
-            // TODO: check error message.
-
+            if (aData) {
+                // An error occurred during the PackageKit transaction.
+                this.showAlertNotification(aData);
+            }
+            this.mPackageKitService = null;
             // Try and install possibly deferred packages.
             this.packageKitInstall();
             break;
@@ -191,10 +241,11 @@ let gMissingFontsNotifier = {
             }, this);
         }
         if (preferences.prefHasUserValue("packagekitnames")) {
-            this.mPackageKitNames = preferences.getCharPref("packagekitnames");
+            this.mPackageKitNames =
+                preferences.getCharPref("packagekitnames").split(",");
         }
-        if (preferences.prefHasUserValue("downloadfromserver")) {
-            this.mDownloadFromServer = preferences.getBoolPref("downloadfromserver");
+        if (preferences.prefHasUserValue("fontserver")) {
+            this.mFontServer = preferences.getCharPref("fontserver");
         }
     },
 
@@ -216,7 +267,7 @@ let gMissingFontsNotifier = {
         scriptList.forEach(function(aElement, aIndex, aArray) {
             if (aElement == "") {
                 // skip empty tag
-            } else if (!(aElement in this.mScripts)) {
+            } else if (!(this.mScripts.hasOwnProperty(aElement))) {
                 // new script
                 this.mScripts[aElement] = kNotified;
                 hasNewScripts = true;
@@ -293,29 +344,38 @@ let gMissingFontsNotifier = {
         }
     },
 
-    showAlertNotification: function(aMessage) {
-        Cc["@mozilla.org/alerts-service;1"].getService(Ci.nsIAlertsService).
-            showAlertNotification(kIcon,
-                                  this.getString("notificationTitle"),
-                                  aMessage,
-                                  false, "", null, "");
-    },
-
     processScripts: function(aScriptsToProcess) {
         let name, data;
         let noFontsAvailable = [];
+
+        // Try and find a way to get appropriate font for each script.
         while (aScriptsToProcess.length) {
             name = aScriptsToProcess.pop();
             if (name in this.mFontData) {
                 data = this.mFontData[name];
-                if (this.mPackageKitNames && this.mPackageKitNames in data) {
-                    this.mPackagesToDownload.push(data[this.mPackageKitNames]);
-                    continue;
-                } else if (this.mDownloadFromServer && data.download) {
-                    this.downloadFrom(data.download);
+
+                // Try each of the package kit name in this.mPackageKitNames
+                if (this.mPackageKitNames.length) {
+                    let foundFontPackage = false;
+                    for (let packageKitName of this.mPackageKitNames) {
+                        if (data[packageKitName]) {
+                            this.mPackagesToDownload.push(data[packageKitName]);
+                            foundFontPackage = true;
+                        }
+                    }
+                    if (foundFontPackage) {
+                        continue;
+                    }
+                }
+
+                // Try and find a file from the font server.
+                if (this.mFontServer && data.download) {
+                    this.downloadFrom(this.mFontServer + "/" + data.download);
                     continue;
                 }
             }
+
+            // No appropriate fonts found for that script.
             noFontsAvailable.push(this.getString(name));
         }
         this.packageKitInstall();
@@ -343,6 +403,7 @@ let gMissingFontsNotifier = {
                 p.data = aPackage;
                 packages.appendElement(p, false);
             });
+            this.mPackagesToDownload = [];
             this.mPackageKitService.installPackages(this.mPackageKitService.
                                                     PK_INSTALL_PACKAGE_NAMES,
                                                     packages, this);
@@ -425,18 +486,22 @@ function shutdown(aData, aReason) {
         getService(Ci.nsIMessageListenerManager).
         removeDelayedFrameScript(kE10sCode);
 
-    // Reset preferences.
-    let prefs = Cc["@mozilla.org/preferences-service;1"].
-        getService(Ci.nsIPrefService);
+    // Disable notification of missing fonts.
     if (aReason == ADDON_DISABLE || aReason == ADDON_UNINSTALL) {
-        prefs.getBranch("gfx.missing_fonts.").clearUserPref("notify");
-    }
-    if (aReason == ADDON_UNINSTALL) {
-        prefs.resetBranch("missingfontsnotifier.");
+        Cc["@mozilla.org/preferences-service;1"].
+            getService(Ci.nsIPrefService).
+            getBranch("gfx.missing_fonts.").clearUserPref("notify");
     }
 }
 
 function install(aData, aReason) {
+    // Initialize the addon preferences.
+    let preferences = Cc["@mozilla.org/preferences-service;1"].
+        getService(Ci.nsIPrefService).getBranch("missingfontsnotifier.");
+    preferences.setCharPref("packagekitnames",
+                            kDefaultPackageKitNames.toString());
+    preferences.setCharPref("fontserver",
+                            kDefaultFontServer);
 }
 
 function uninstall(aData, aReason) {
@@ -444,4 +509,8 @@ function uninstall(aData, aReason) {
     Cc["@mozilla.org/globalmessagemanager;1"].
         getService(Ci.nsIMessageBroadcaster).
         broadcastAsyncMessage("MissingFontsNotifier:uninstall", {});
+
+    // Reset the addon preferences.
+    Cc["@mozilla.org/preferences-service;1"].
+        getService(Ci.nsIPrefService).resetBranch("missingfontsnotifier.");
 }
